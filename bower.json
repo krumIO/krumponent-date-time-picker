@@ -2,6 +2,7 @@
   "name": "krumponent-date-time-picker",
   "description": "Pick date and time",
   "main": "krumponent-date-time-picker.html",
+  "version":"0.0.1",
   "dependencies": {
     "polymer": "Polymer/polymer#^1.4.0",
     "paper-dropdown-menu": "polymerelements/paper-dropdown-menu#1.3.5",
