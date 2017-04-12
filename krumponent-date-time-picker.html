@@ -1,0 +1,171 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../vaadin-date-picker/vaadin-date-picker.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../paper-dropdown-menu/paper-dropdown-menu.html">
+<link rel="import" href="../paper-listbox/paper-listbox.html">
+<link rel="import" href="../paper-item/paper-item.html">
+<!--
+`krumponent-date-time-picker`
+Pick date and time
+
+@demo demo/index.html 
+-->
+
+<dom-module id="krumponent-date-time-picker">
+  <template>
+    <style include="iron-flex iron-flex-alignment">
+      :host {
+        display: block;
+        --vaadin-date-picker-overlay: {
+          max-height:300px;
+        };
+
+      }
+      vaadin-date-picker {
+        min-width: 100px;
+      }
+      .items {
+        margin-right: 5px;
+      }
+      paper-input {
+        text-align: center;
+      }
+      .sliminput {
+        max-width: 45px;
+      }
+      paper-dropdown-menu {
+        width: 55px;
+      }
+    </style>
+    <div class="horizontal layout flex">
+      <vaadin-date-picker class="flex items" id="datepicker" always-float-label label="[[label]]" value="{{date}}" auto-validate="[[autoValidate]]" required="[[required]]"></vaadin-date-picker>
+      <paper-input value="{{hour}}" class="flex sliminput" type="number" label="hr" min="1" auto-validate="[[autoValidate]]" id="hourInput" required="[[required]]"><span suffix>:</span></paper-input>
+      <paper-input value="{{minute}}" class="flex sliminput items" type="number" label="min" min="0" auto-validate="[[autoValidate]]" id="minInput" required="[[required]]"></paper-input>
+      <paper-dropdown-menu auto-validate="[[autoValidate]]" id="ampmDropdown" required="[[required]]">
+        <paper-listbox attr-for-selected="name" selected="{{half}}" class="dropdown-content">
+          <paper-item name="AM">AM</paper-item>
+          <paper-item name="PM">PM</paper-item>
+        </paper-listbox>
+      </paper-dropdown-menu>
+    </div>
+  </template>
+
+  <script>
+    Polymer({
+
+      is: 'krumponent-date-time-picker',
+
+      properties: {
+        half: {
+          type: String,
+          value: "AM"
+        },
+        value: {
+          type: String,
+          value: "",
+          notify: true
+        },
+        display: {
+          type: String,
+          value: ""
+        },
+        label: {
+          type: String,
+          value: ""
+        },
+        date: {
+          type: String
+        },
+        hour: {
+          type: String
+        },
+        minute: {
+          type: String
+        },
+        autoValidate: {
+          type: Boolean,
+          value: true
+        },
+        required: {
+          type: Boolean,
+          value: false
+        }
+      },
+      observers: [
+        "formateDateTime(date,hour,minute,half)",
+        "limitLengthMinute(minute)",
+        "limitLengthHour(hour)",
+        "displayGiven(display)"
+      ],
+      validate: function() {
+        if(this.required) {
+          if(this.hour > 0 && this.hour < 13 && this.minute >= 0 && this.minute < 60 && this.half && this.date) {
+            return true;
+          } else {
+            return false;
+          }
+        } else {
+          return true;
+        }
+      },
+      formateDateTime: function(d,h,m,half) {
+        var newval = new Date((d ? d.replace(/-/g, '/') + " " : "") + (h ? h : "00") + ":" + (m ? (m.length < 2 ?  "0" + m : m) : "00") + " " + half);
+        this.set('value', newval && newval != "Invalid Date" ? newval.toISOString() : "");
+        if(this.autoValidate) {
+          this.validate();
+        }
+      },
+      displayGiven: function(d) {
+        var date;
+        if(d != null) {
+          date = new Date(d);
+        }
+        if(date && date.toString().length > 0 && date.toString() != "Invalid Date") {
+          var tempMonth = date.getMonth() + 1;
+          var tempDay = date.getDate();
+          //if you need to pad the month or day, go ahead
+          this.date = date.getFullYear() + "-" + (tempMonth < 10 ? "0" + tempMonth : tempMonth) + "-" + (tempDay < 10 ? "0" + tempDay : tempDay);
+          this.hour = date.getHours();
+          this.minute = date.getMinutes();
+          if(date.getHours() >= 12) {
+            this.half = "PM";
+          } else {
+            this.half = "AM";
+          }
+        } else {
+          this.date = "";
+          this.hour = "";
+          this.minute = "";
+          this.half = "AM";
+        }
+      },
+      limitLengthMinute: function(m) {
+        if(m.length > 2) {
+          this.minute = m.substring(0,2);
+        } else if(m >= 60) {
+          if(m % 60 > 9) {
+            this.minute = m % 60;
+          } else {
+            this.minute = "0" + m % 60;
+          }
+        } else if(m < 0) {
+          this.minute = 0;
+        }
+      },
+      limitLengthHour: function(h) {
+        if(h.length > 2) {
+          this.hour = h.substring(0,2);
+        } else if(h > 12) {
+          if(h % 12 == 0) {
+            this.hour = 12;
+          } else {
+            this.hour = h % 12;
+          }
+        } else if(h < 0) {
+          this.hour = 0;
+        }
+      }
+    });
+  </script>
+</dom-module>
