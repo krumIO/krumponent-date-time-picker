@@ -40,7 +40,7 @@ Pick date and time
     </style>
     <div class="horizontal layout flex">
       <vaadin-date-picker class="flex items" id="datepicker" always-float-label label="[[label]]" value="{{date}}" auto-validate="[[autoValidate]]" required="[[required]]"></vaadin-date-picker>
-      <paper-input value="{{hour}}" class="flex sliminput" type="number" label="hr" min="getMinForTimeMode(militaryTime)" auto-validate="[[autoValidate]]" id="hourInput" required="[[required]]"><span suffix>:</span></paper-input>
+      <paper-input value="{{hour}}" class="flex sliminput" type="number" label="hr" min="[[getMinForTimeMode(militaryTime)]]" auto-validate="[[autoValidate]]" id="hourInput" required="[[required]]"><span suffix>:</span></paper-input>
       <paper-input value="{{minute}}" class="flex sliminput items" type="number" label="min" min="0" auto-validate="[[autoValidate]]" id="minInput" required="[[required]]"></paper-input>
       <template is="dom-if" if="[[!militaryTime]]">
         <paper-dropdown-menu auto-validate="[[autoValidate]]" id="ampmDropdown" required="[[required]]">
