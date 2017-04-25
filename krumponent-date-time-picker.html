@@ -40,14 +40,16 @@ Pick date and time
     </style>
     <div class="horizontal layout flex">
       <vaadin-date-picker class="flex items" id="datepicker" always-float-label label="[[label]]" value="{{date}}" auto-validate="[[autoValidate]]" required="[[required]]"></vaadin-date-picker>
-      <paper-input value="{{hour}}" class="flex sliminput" type="number" label="hr" min="1" auto-validate="[[autoValidate]]" id="hourInput" required="[[required]]"><span suffix>:</span></paper-input>
+      <paper-input value="{{hour}}" class="flex sliminput" type="number" label="hr" min="getMinForTimeMode(militaryTime)" auto-validate="[[autoValidate]]" id="hourInput" required="[[required]]"><span suffix>:</span></paper-input>
       <paper-input value="{{minute}}" class="flex sliminput items" type="number" label="min" min="0" auto-validate="[[autoValidate]]" id="minInput" required="[[required]]"></paper-input>
-      <paper-dropdown-menu auto-validate="[[autoValidate]]" id="ampmDropdown" required="[[required]]">
-        <paper-listbox attr-for-selected="name" selected="{{half}}" class="dropdown-content">
-          <paper-item name="AM">AM</paper-item>
-          <paper-item name="PM">PM</paper-item>
-        </paper-listbox>
-      </paper-dropdown-menu>
+      <template is="dom-if" if="[[!militaryTime]]">
+        <paper-dropdown-menu auto-validate="[[autoValidate]]" id="ampmDropdown" required="[[required]]">
+          <paper-listbox attr-for-selected="name" selected="{{half}}" class="dropdown-content">
+            <paper-item name="AM">AM</paper-item>
+            <paper-item name="PM">PM</paper-item>
+          </paper-listbox>
+        </paper-dropdown-menu>
+      </template>
     </div>
   </template>
 
@@ -90,6 +92,10 @@ Pick date and time
         required: {
           type: Boolean,
           value: false
+        },
+        militaryTime: {
+          type: Boolean,
+          value: false
         }
       },
       observers: [
@@ -100,7 +106,7 @@ Pick date and time
       ],
       validate: function() {
         if(this.required) {
-          if(this.hour > 0 && this.hour < 13 && this.minute >= 0 && this.minute < 60 && this.half && this.date) {
+          if(this.hour > 0 && ((!this.militaryTime && this.hour < 13) || (this.militaryTime && this.hour < 24)) && this.minute >= 0 && this.minute < 60 && this.date) {
             return true;
           } else {
             return false;
@@ -110,7 +116,7 @@ Pick date and time
         }
       },
       formateDateTime: function(d,h,m,half) {
-        var newval = new Date((d ? d.replace(/-/g, '/') + " " : "") + (h ? h : "00") + ":" + (m ? (m.length < 2 ?  "0" + m : m) : "00") + " " + half);
+        var newval = new Date((d ? d.replace(/-/g, '/') + " " : "") + (h ? h : "00") + ":" + (m ? (m.length < 2 ?  "0" + m : m) : "00") + " " + (this.militaryTime ? "" : half));
         this.set('value', newval && newval != "Invalid Date" ? newval.toISOString() : "");
         if(this.autoValidate) {
           this.validate();
@@ -156,15 +162,20 @@ Pick date and time
       limitLengthHour: function(h) {
         if(h.length > 2) {
           this.hour = h.substring(0,2);
-        } else if(h > 12) {
+        } else if(!this.militaryTime) {
           if(h % 12 == 0) {
             this.hour = 12;
           } else {
             this.hour = h % 12;
           }
+        } else if(this.militaryTime) {
+          this.hour = h % 24;
         } else if(h < 0) {
           this.hour = 0;
         }
+      },
+      getMinForTimeMode: function(mt) {
+        return (mt ? 0 : 1);
       }
     });
   </script>
